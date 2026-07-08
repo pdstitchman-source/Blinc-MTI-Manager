@@ -1,0 +1,14 @@
+{
+  "pins" : [
+    {
+      "identity" : "corexlsx",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/CoreOffice/CoreXLSX",
+      "state" : {
+        "branch" : "master",
+        "revision" : "8d07694b5f58c7c8c9b0a4db0e5c7d7b1e5e5c5e"
+      }
+    }
+  ],
+  "version" : 2
+}
