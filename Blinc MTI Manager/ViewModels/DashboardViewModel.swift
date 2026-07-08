@@ -23,13 +23,38 @@ class DashboardViewModel: NSObject, ObservableObject {
     /// The name of the currently imported spreadsheet file.
     @Published var importedFileName: String = ""
     
+    /// The URL of the currently imported spreadsheet file.
+    @Published var importedFileURL: URL?
+    
     /// Indicates whether a file import operation is in progress.
     @Published var isImporting: Bool = false
     
     /// Error message if an import fails.
     @Published var importError: String = ""
     
+    /// Search text for filtering properties.
+    @Published var searchText: String = ""
+    
+    /// Controls whether the settings sheet is visible.
+    @Published var showSettings: Bool = false
+    
+    // MARK: - Private Properties
+    
+    private let spreadsheetImporter = SpreadsheetImporter()
+    
     // MARK: - Computed Properties
+    
+    /// Filtered and sorted properties based on search text.
+    var filteredProperties: [Property] {
+        let filtered = searchText.isEmpty
+            ? properties
+            : properties.filter { property in
+                property.address.localizedCaseInsensitiveContains(searchText) ||
+                property.tenantName.localizedCaseInsensitiveContains(searchText) ||
+                property.email.localizedCaseInsensitiveContains(searchText)
+            }
+        return filtered.sorted { $0.address < $1.address }
+    }
     
     /// The total number of properties loaded.
     var propertiesLoadedCount: Int {
@@ -74,6 +99,15 @@ class DashboardViewModel: NSObject, ObservableObject {
     }
     
     // MARK: - Public Methods
+    
+    /// Initiates the spreadsheet file selection process.
+    func selectSpreadsheetFile() {
+        spreadsheetImporter.selectSpreadsheetFile { [weak self] url in
+            Task { @MainActor in
+                self?.handleFileSelected(url)
+            }
+        }
+    }
     
     /// Toggles the selection state of a property.
     /// - Parameter property: The property to toggle
@@ -151,6 +185,35 @@ class DashboardViewModel: NSObject, ObservableObject {
     func clearProperties() {
         properties.removeAll()
         importedFileName = ""
+        importedFileURL = nil
         selectedProperty = nil
+        searchText = ""
+        spreadsheetImporter.clearSelection()
+    }
+    
+    // MARK: - Private Methods
+    
+    /// Handles the result of file selection.
+    /// - Parameter url: The selected file URL, or nil if cancelled
+    private func handleFileSelected(_ url: URL?) {
+        importError = ""
+        
+        guard let url = url else {
+            return
+        }
+        
+        // Validate file access
+        guard url.startAccessingSecurityScopedResource() else {
+            importError = "Unable to access selected file"
+            return
+        }
+        
+        defer {
+            url.stopAccessingSecurityScopedResource()
+        }
+        
+        // Store file information
+        importedFileURL = url
+        importedFileName = url.lastPathComponent
     }
 }

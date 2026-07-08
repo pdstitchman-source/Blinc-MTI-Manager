@@ -8,11 +8,6 @@ struct DashboardView: View {
     
     @EnvironmentObject var viewModel: DashboardViewModel
     
-    // MARK: - State Properties
-    
-    @State private var showFileImporter = false
-    @State private var showSettings = false
-    
     // MARK: - Body
     
     var body: some View {
@@ -52,10 +47,7 @@ struct DashboardView: View {
             }
             .padding(Constants.Spacing.large)
         }
-        .sheet(isPresented: $showFileImporter) {
-            fileImporterContent
-        }
-        .sheet(isPresented: $showSettings) {
+        .sheet(isPresented: $viewModel.showSettings) {
             SettingsView()
                 .environmentObject(viewModel)
         }
@@ -98,7 +90,7 @@ struct DashboardView: View {
                 .font(.system(size: Constants.FontSize.body, weight: .semibold))
                 .foregroundColor(.primary)
             
-            Button(action: { showFileImporter = true }) {
+            Button(action: viewModel.selectSpreadsheetFile) {
                 HStack(spacing: Constants.Spacing.small) {
                     Image(systemName: "doc.badge.plus")
                     Text("Import MTI Spreadsheet")
@@ -107,6 +99,7 @@ struct DashboardView: View {
             }
             .buttonStyle(.bordered)
             .controlSize(.large)
+            .disabled(viewModel.isImporting)
             
             if !viewModel.importedFileName.isEmpty {
                 HStack(spacing: Constants.Spacing.small) {
@@ -201,7 +194,7 @@ struct DashboardView: View {
             .controlSize(.large)
             .disabled(viewModel.selectedReadyToEmailCount == 0)
             
-            Button(action: { showSettings = true }) {
+            Button(action: { viewModel.showSettings = true }) {
                 HStack(spacing: Constants.Spacing.small) {
                     Image(systemName: "gear")
                     Text("Settings")
@@ -283,18 +276,6 @@ struct DashboardView: View {
                 .frame(maxWidth: .infinity)
             }
         }
-    }
-    
-    private var fileImporterContent: some View {
-        VStack {
-            Text("This feature requires integration with a spreadsheet parser.")
-                .font(.system(size: Constants.FontSize.body))
-            
-            Text("Please implement the file import logic using a library like XLSXReader.")
-                .font(.system(size: Constants.FontSize.small))
-                .foregroundColor(.secondary)
-        }
-        .padding(Constants.Spacing.large)
     }
 }
 
