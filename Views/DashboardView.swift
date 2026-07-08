@@ -15,6 +15,7 @@ struct DashboardView: View {
     ]
 
     @State private var selectedAgent = SettingsManager.shared.loadAgent()
+    @State private var properties: [Property] = []
 
     var body: some View {
 
@@ -43,11 +44,13 @@ struct DashboardView: View {
 
             Button("Choose Spreadsheet") {
 
+                properties = SpreadsheetImporter().loadSpreadsheet()
+
             }
 
             Divider()
 
-            Text("No spreadsheet loaded")
+            PropertyTable(properties: properties)
 
             Spacer()
 
