@@ -22,3 +22,43 @@ struct DashboardView: View {
 
             Text("Blinc MTI Manager")
                 .font(.largeTitle.bold())
+
+            VStack(alignment: .leading) {
+
+                Text("Estate Agent")
+
+                Picker("", selection: $selectedAgent) {
+
+                    ForEach(agents, id: \.self) {
+
+                        Text($0)
+
+                    }
+
+                }
+                .pickerStyle(.menu)
+                .frame(width:250)
+
+            }
+
+            Button("Choose Spreadsheet") {
+
+            }
+
+            Divider()
+
+            Text("No spreadsheet loaded")
+
+            Spacer()
+
+        }
+        .padding(30)
+        .frame(minWidth:800,minHeight:600)
+
+        .onChange(of: selectedAgent) { newValue in
+            SettingsManager.shared.save(agent: newValue)
+        }
+
+    }
+
+}
